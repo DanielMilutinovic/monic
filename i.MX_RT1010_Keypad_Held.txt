@@ -1,0 +1,222 @@
+#define KEYHELDLIMIT  30                                          //40 too long
+
+int ORANGE_LED = 13;
+
+int column2 = 14;
+int column3 = 15;
+int column4 = 16;
+int column5 = 17;
+int column6 = 18;
+int column7 = 19;
+
+int rowA = 5;
+int rowB = 6;
+int rowC = 7;
+int rowD = 8;
+int rowE = 9;
+int rowF = 10;
+int rowG = 11;
+int rowH = 12;
+
+int gate = 3;
+int data = 2;
+
+boolean keyPressed;
+byte keyNumber;
+
+byte keyHeldCtr;
+//byte keyHeldLimit = 40;
+
+void setup() {
+  pinMode(gate, OUTPUT);
+  digitalWrite(gate, LOW);
+
+  pinMode(data, OUTPUT);
+
+  pinMode(ORANGE_LED, OUTPUT);
+
+  pinMode(column2, INPUT);
+  digitalWrite(column2, HIGH);
+  pinMode(column3, INPUT);
+  digitalWrite(column3, HIGH);
+  pinMode(column4, INPUT);
+  digitalWrite(column4, HIGH);
+  pinMode(column5, INPUT);
+  digitalWrite(column5, HIGH);
+  pinMode(column6, INPUT);
+  digitalWrite(column6, HIGH);
+  pinMode(column7, INPUT);
+  digitalWrite(column7, HIGH);
+
+  pinMode(rowA, OUTPUT);
+  pinMode(rowB, OUTPUT);
+  pinMode(rowC, OUTPUT);
+  pinMode(rowD, OUTPUT);
+  pinMode(rowE, OUTPUT);
+  pinMode(rowF, OUTPUT);
+  pinMode(rowG, OUTPUT);
+  pinMode(rowH, OUTPUT);
+}
+
+void loop() {
+  
+  while ((digitalRead(column2)==0)||(digitalRead(column3)==0)||(digitalRead(column4)==0)||(digitalRead(column5)==0)||(digitalRead(column6)==0)||(digitalRead(column7)==0)) {
+  }
+  
+  //digitalWrite(data, LOW);                                     //data line LOW to indicate up/down arrow key has been released in program edit mode
+  digitalWrite(data, HIGH);                                      //data line HIGH to indicate up/down arrow key has been released in program edit mode 
+                                       
+  delay(50);                                                    //release debounce
+  
+  keyPressed = false;
+
+  while (1) {
+
+    keyNumber = 0;
+
+    digitalWrite(rowA, LOW);
+
+    digitalWrite(rowB, HIGH);
+    digitalWrite(rowC, HIGH);
+    digitalWrite(rowD, HIGH);
+    digitalWrite(rowE, HIGH);
+    digitalWrite(rowF, HIGH);
+    digitalWrite(rowG, HIGH);
+    digitalWrite(rowH, HIGH);                
+
+    scanColumn();                            //scan row A
+    if (keyPressed) break;
+
+    digitalWrite(rowB, LOW);                 
+    digitalWrite(rowA, HIGH);
+
+    scanColumn();                            //scan row B
+    if (keyPressed) break;
+
+    digitalWrite(rowC, LOW);                 
+    digitalWrite(rowB, HIGH);
+
+    scanColumn();                            //scan row C
+    if (keyPressed) break;
+
+    digitalWrite(rowD, LOW);
+    digitalWrite(rowC, HIGH);
+
+    scanColumn();                            //scan row D
+    if (keyPressed) break;    
+
+    digitalWrite(rowE, LOW);
+    digitalWrite(rowD, HIGH);
+
+    scanColumn();                            //scan row E
+    if (keyPressed) break;
+
+    digitalWrite(rowF, LOW);
+    digitalWrite(rowE, HIGH);
+
+    scanColumn();                            //scan row F
+    if (keyPressed) break;
+
+    digitalWrite(rowG, LOW);
+    digitalWrite(rowF, HIGH);
+
+    scanColumn();                            //scan row G
+    if (keyPressed) break;
+
+    digitalWrite(rowH, LOW);
+    digitalWrite(rowG, HIGH);
+
+    scanColumn();                            //scan row H
+    if (keyPressed) break;
+
+  }
+
+  digitalWrite(ORANGE_LED, HIGH);
+
+  delay(20);                                //press debounce
+
+  for (keyHeldCtr = 0; keyHeldCtr < KEYHELDLIMIT; keyHeldCtr++) {                 //determine if key held
+    
+    if ((digitalRead(column2)==1)&&(digitalRead(column3)==1)&&(digitalRead(column4)==1)&&(digitalRead(column5)==1)&&(digitalRead(column6)==1)&&(digitalRead(column7)==1)) break;
+    delay(20);
+  }
+
+  if (keyHeldCtr == KEYHELDLIMIT) keyNumber += 96;
+    
+  sendValue(keyNumber);
+  //digitalWrite(data, HIGH);                                      //data line HIGH to indicate up/down arrow key is being held in program edit mode 
+  
+  digitalWrite(ORANGE_LED, LOW);
+}
+
+void scanColumn(void) {
+  int input;
+  while (1) {
+
+    input = digitalRead(column7);
+    //input = GPIOPinRead(GPIO_PORTE_BASE, GPIO_PIN_5);                      //read PE5 (column 7 on keypad) into input
+    if (input == 0x00) {
+      keyPressed = true;
+      break;
+    }
+    keyNumber += 1;
+    input = digitalRead(column6);
+    //input = GPIOPinRead(GPIO_PORTE_BASE, GPIO_PIN_4);                      //read PE4 (column 6 on keypad) into input
+    if (input == 0x00) {
+      keyPressed = true;
+      break;
+    }
+    keyNumber += 1;
+    input = digitalRead(column5);
+    //input = GPIOPinRead(GPIO_PORTE_BASE, GPIO_PIN_3);                      //read PE3 (column 5 on keypad) into input
+    if (input == 0x00) {
+      keyPressed = true;
+      break;
+    }
+    keyNumber += 1;
+    input = digitalRead(column4);
+    //input = GPIOPinRead(GPIO_PORTE_BASE, GPIO_PIN_2);                      //read PE2 (column 4 on keypad) into input
+    if (input == 0x00) {
+      keyPressed = true;
+      break;
+    }
+    keyNumber += 1;
+    input = digitalRead(column3);
+    //input = GPIOPinRead(GPIO_PORTE_BASE, GPIO_PIN_1);                      //read PE1 (column 3 on keypad) into input
+    if (input == 0x00) {
+      keyPressed = true;
+      break;
+    }
+    keyNumber += 1;
+    input = digitalRead(column2);
+    //input = GPIOPinRead(GPIO_PORTE_BASE, GPIO_PIN_0);                      //read PE0 (column 2 on keypad) into input
+    if (input == 0x00) {
+      keyPressed = true;
+      break;
+    }
+    keyNumber += 1;
+    break;
+  }
+}
+
+void sendValue(byte valueOut) {
+  for (int i = 0; i < 8; i++) {
+    if (valueOut & (1 << i)) {
+      digitalWrite(data, HIGH);
+      //digitalWrite(LEDOne, LOW);
+      //digitalWrite(LEDTwo, HIGH);
+    }
+    else {
+      digitalWrite(data, LOW);
+      //digitalWrite(LEDTwo, LOW);
+      //digitalWrite(LEDOne, HIGH);
+    }
+    digitalWrite(gate, HIGH);
+    //digitalWrite(LEDZero, HIGH);
+    //delay(60000);
+    digitalWrite(gate, LOW);
+    //digitalWrite(LEDZero, LOW);
+    //delay(30000);
+  }
+}
+

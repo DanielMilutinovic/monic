@@ -9,3 +9,5 @@ files:
 
 "MONIC KEYPAD LAYOUT": Diagram of the functions on the 8 row, 6 column matrix keypad. 
 
+"monic firmware": the software files 
+
